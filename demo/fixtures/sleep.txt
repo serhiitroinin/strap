@@ -1,0 +1,10 @@
+Sleep — last 1 days
+
+Date        Perf%  Eff%  Total  REM    Deep   Light  Awake  RespR  Dist  Cycles  Nap
+──────────  ─────  ────  ─────  ─────  ─────  ─────  ─────  ─────  ────  ──────  ───
+2026-05-10  92%    91%   7h44m  1h45m  1h22m  4h12m  0h25m  15.2   8     5
+
+Sleep Need Breakdown
+Date        Needed  Baseline  +Debt   +Strain  -Nap
+──────────  ──────  ────────  ──────  ───────  ────
+2026-05-10  8h12m   7h30m     +0h22m  +0h20m   —

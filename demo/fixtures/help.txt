@@ -1,0 +1,124 @@
+Usage: strap [options] [command]
+
+WHOOP health-data CLI — recovery, strain, sleep, workouts, cycles
+
+Options:
+  -V, --version                                       output the version number
+  -h, --help                                          display help for command
+
+Commands:
+  auth-setup <clientId> <clientSecret> <redirectUri>  Save WHOOP OAuth2 app credentials to macOS Keychain
+  auth-login                                          Interactive OAuth2 login — opens browser, waits for redirect URL
+  auth-status                                         Check OAuth2 token status and expiry
+  auth-logout                                         Remove all WHOOP credentials from macOS Keychain
+  profile                                             Show user profile (name, email)
+  body                                                Show body measurements — height, weight, max heart rate
+  recovery [days]                                     Recovery scores (0–100), HRV (ms), RHR (bpm), SpO2 (%), skin temperature (°C)
+  sleep [days]                                        Sleep stages, performance %, efficiency %, respiratory rate, sleep needed breakdown
+  workouts [days]                                     Workout strain (0–21), HR zones (Z0–Z5), distance, elevation, kilojoules
+  cycles [days]                                       Physiological cycles — day strain, average/max HR, energy expenditure
+  overview [days]                                     Full dashboard — profile + recovery + sleep + workouts in one view
+  json <path> [params...]                             Raw JSON from any WHOOP API v2 endpoint
+  help [command]                                      display help for command
+
+OVERVIEW
+  Fetches health and recovery data from the WHOOP API v2.
+  All credentials are stored in macOS Keychain (service: strap).
+  All data commands accept an optional [days] argument (default: 7).
+  Output is formatted tables to stdout; use 'json' for raw API data.
+
+COMMAND CATEGORIES
+  Auth:
+    auth-setup <id> <secret> <uri>   Save OAuth2 app credentials
+    auth-login                       Interactive OAuth2 login flow
+    auth-status                      Check token validity
+    auth-logout                      Remove all credentials
+
+  Data (default 7 days):
+    overview [days]    Full dashboard — profile + recovery + sleep + workouts
+    recovery [days]    Recovery score, HRV, RHR, SpO2, skin temperature
+    sleep [days]       Sleep stages, performance, efficiency, respiratory rate
+    workouts [days]    Workout strain, HR zones, distance, elevation
+    cycles [days]      Physiological cycles (day strain, avg/max HR, kJ)
+    profile            User profile information
+    body               Body measurements (height, weight, max HR)
+
+  Raw API:
+    json <path> [k=v ...]   Raw JSON from any WHOOP API endpoint
+
+METRIC QUICK REFERENCE
+  Recovery Score (0–100):
+    67–100  Green   — Well recovered. Push hard, high-intensity training OK.
+    34–66   Yellow  — Moderate recovery. Normal training, monitor fatigue.
+    0–33    Red     — Under-recovered. Light activity only, prioritize sleep.
+
+  Strain (0–21 scale, logarithmic):
+    0–9     Light     — Easy day, minimal cardiovascular load
+    10–13   Moderate  — Noticeable effort, typical normal day
+    14–17   High      — Hard training, significant cardiovascular load
+    18–21   All-out   — Maximal effort, extreme exertion
+
+  Sleep Performance (%):
+    100%+   Exceeded sleep need
+    85–99%  Good — meeting most sleep needs
+    70–84%  Fair — some sleep debt accumulating
+    <70%    Poor — significant sleep debt
+
+  Sleep Efficiency (%):
+    ≥85%   Good — most time in bed is actual sleep
+    <85%   Below target — too much awake time in bed
+
+  Sleep Stages (% of total sleep time):
+    REM    20–25%  — Memory consolidation, learning, emotional processing
+    Deep   15–20%  — Physical recovery, immune function, growth hormone
+    Light  50–55%  — Transition sleep, muscle recovery
+    Awake  <10%    — Normal awakenings during sleep
+
+  Sleep Needed breakdown:
+    Baseline  — Base sleep need (genetic, age-dependent)
+    +Debt     — Extra sleep needed to repay accumulated debt
+    +Strain   — Extra sleep needed due to today's strain
+    -Nap      — Sleep credit from naps taken
+
+  HRV (RMSSD, ms) — higher is better:
+    Highly individual. Track YOUR trend, not absolute values.
+    Declining HRV over 3+ days = possible overtraining or illness.
+
+  RHR (bpm) — lower is better:
+    Trending down = improving fitness.
+    Sudden spike (5+ bpm) = potential illness, stress, or overtraining.
+
+  SpO2 (%):
+    95–100%  Normal
+    <95%     Below normal — may indicate altitude or respiratory issues
+
+  Skin Temperature (°C):
+    Baseline varies by person (~34–35°C typical).
+    Spike >1°C above your baseline may indicate illness onset.
+
+  Respiratory Rate (breaths/min during sleep):
+    Normal: 12–20 breaths/min. Sudden increase may indicate illness.
+
+  HR Zones (per workout, Z0–Z5):
+    Z0  Below 50% max HR — Warm-up / cooldown
+    Z1  50–60% max HR    — Light / recovery
+    Z2  60–70% max HR    — Fat burn / aerobic base
+    Z3  70–80% max HR    — Aerobic / cardio
+    Z4  80–90% max HR    — Threshold / tempo
+    Z5  90–100% max HR   — VO2 max / anaerobic
+
+ALERTING THRESHOLDS
+  Recovery <25 two days in a row    → Recovery critically low, consider rest day
+  Sleep <5h two nights in a row     → Sleep debt accumulating, prioritize tonight
+  HRV declining 3+ days             → Watch for overtraining or illness
+  SpO2 <94%                         → Below normal, monitor for altitude or illness
+  Skin temp >1°C above baseline     → Possible illness onset
+  Strain >16 on red recovery day    → Overreaching risk
+
+EXAMPLES
+  strap recovery              Last 7 days recovery scores
+  strap recovery 1            Just today's recovery
+  strap sleep 14              Two weeks of sleep data
+  strap workouts 30           Last month of workouts
+  strap overview              Full 7-day dashboard
+  strap json /v2/recovery     Raw JSON from recovery endpoint

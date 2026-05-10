@@ -4,6 +4,8 @@ A terminal CLI for [WHOOP](https://www.whoop.com) — recovery, strain, sleep, w
 
 The name comes from WHOOP's wearable, which is called a *strap*. This is an unofficial third-party CLI.
 
+![demo](demo/demo.gif)
+
 ```
 $ strap recovery
 Recovery — last 7 days

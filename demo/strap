@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Demo wrapper — dispatches to fixture files so the GIF can be regenerated
+# without auth or live API calls. Real CLI lives at ../dist/strap.
+set -e
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+F="$DIR/fixtures"
+
+case "${1:-}" in
+  ""|--help|-h)        cat "$F/help.txt" ;;
+  --version|-V)        echo "0.1.0" ;;
+  profile)             cat "$F/profile.txt" ;;
+  recovery)            cat "$F/recovery.txt" ;;
+  sleep)               cat "$F/sleep.txt" ;;
+  workouts)            cat "$F/workouts.txt" ;;
+  auth-status)         echo "Not logged in." ;;
+  *) echo "demo: unknown subcommand: $1" >&2; exit 1 ;;
+esac
