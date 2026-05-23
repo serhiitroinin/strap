@@ -48,7 +48,7 @@ const program = new Command();
 program
   .name("strap")
   .description("WHOOP health-data CLI — recovery, strain, sleep, workouts, cycles")
-  .version("0.1.0")
+  .version("0.2.0")
   .addHelpText("after", `
 OVERVIEW
   Fetches health and recovery data from the WHOOP API v2.
