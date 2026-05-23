@@ -9,6 +9,7 @@ import {
   exchangeCode,
   clearOAuth2Data,
 } from "./lib/oauth2.ts";
+import { importFromLuff } from "./lib/import-luff.ts";
 import * as out from "./lib/output.ts";
 import { whoopProvider, OAUTH2_CONFIG } from "./providers/whoop.ts";
 import type { WhoopProvider, WhoopSleep } from "./types.ts";
@@ -278,6 +279,34 @@ Example:
   .action(() => {
     clearOAuth2Data();
     out.success("All WHOOP credentials removed from Keychain.");
+  });
+
+program
+  .command("auth-import-from-luff")
+  .description("One-shot: copy WHOOP auth from legacy luff-whoop Keychain entry")
+  .addHelpText("after", `
+Details:
+  For users migrating from the older 'whoop' CLI shipped via the luff
+  monorepo. Reads all credentials stored under the 'luff-whoop' Keychain
+  service and copies them to 'strap'. Idempotent — re-run is safe.
+
+  The source entries are NOT deleted; remove them manually with:
+    security delete-generic-password -s luff-whoop -a <account>
+
+Example:
+  strap auth-import-from-luff`)
+  .action(() => {
+    const { copied, missing } = importFromLuff();
+    if (copied.length === 0) {
+      out.error("No entries found under luff-whoop. Nothing to import.");
+      process.exit(1);
+    }
+    out.success(`Imported ${copied.length} entries from luff-whoop:`);
+    for (const k of copied) console.log(`  + ${k}`);
+    if (missing.length > 0) {
+      out.blank();
+      out.info(`Missing (not present in luff-whoop): ${missing.join(", ")}`);
+    }
   });
 
 // ── Data commands ────────────────────────────────────────────────
