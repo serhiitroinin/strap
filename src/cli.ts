@@ -10,6 +10,7 @@ import {
   clearOAuth2Data,
 } from "./lib/oauth2.ts";
 import { importFromLuff } from "./lib/import-luff.ts";
+import { readSecret } from "./lib/prompt.ts";
 import * as out from "./lib/output.ts";
 import { whoopProvider, OAUTH2_CONFIG } from "./providers/whoop.ts";
 import type { WhoopProvider, WhoopSleep } from "./types.ts";
@@ -155,24 +156,30 @@ EXAMPLES
 // ── Auth commands ────────────────────────────────────────────────
 
 program
-  .command("auth-setup <clientId> <clientSecret> <redirectUri>")
-  .description("Save WHOOP OAuth2 app credentials to macOS Keychain")
+  .command("auth-setup <clientId> <redirectUri>")
+  .description("Save WHOOP OAuth2 app credentials (client secret prompted securely)")
   .addHelpText("after", `
 Details:
   Stores your WHOOP developer app credentials in macOS Keychain
   (service: strap). You need a WHOOP developer account and an app
   registered at https://developer.whoop.com/ to get these values.
+  The client secret is prompted securely (never passed as an argument).
 
   After setup, run 'strap auth-login' to complete the OAuth2 flow.
 
 Arguments:
   clientId      — OAuth2 client ID from WHOOP developer portal
-  clientSecret  — OAuth2 client secret from WHOOP developer portal
   redirectUri   — Redirect URI configured in your WHOOP app
+  (client secret is entered at the secure prompt)
 
 Example:
-  strap auth-setup abc123 secret456 https://localhost:8080/callback`)
-  .action((clientId: string, clientSecret: string, redirectUri: string) => {
+  strap auth-setup abc123 https://localhost:8080/callback`)
+  .action(async (clientId: string, redirectUri: string) => {
+    const clientSecret = await readSecret("WHOOP client secret: ");
+    if (!clientSecret) {
+      out.error("No client secret provided.");
+      process.exit(1);
+    }
     saveOAuth2Credentials(clientId, clientSecret, redirectUri);
     out.success("OAuth2 credentials saved to Keychain.");
     out.info("Now run: strap auth-login");
@@ -216,6 +223,14 @@ Example:
     const codeMatch = redirectUrl.match(/[?&]code=([^&]+)/);
     if (!codeMatch) {
       out.error("Could not extract authorization code from URL.");
+      process.exit(1);
+    }
+
+    // Validate the state parameter to bind this redirect to our request (CSRF protection).
+    const stateMatch = redirectUrl.match(/[?&]state=([^&]+)/);
+    const returnedState = stateMatch ? decodeURIComponent(stateMatch[1]!) : "";
+    if (returnedState !== state) {
+      out.error("OAuth2 state mismatch — the pasted URL does not match this login request. Aborting.");
       process.exit(1);
     }
 
