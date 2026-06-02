@@ -1,6 +1,6 @@
 {
   "name": "strap",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "WHOOP CLI — recovery, strain, sleep, workouts, cycles from your shell",
   "module": "src/cli.ts",
   "type": "module",
