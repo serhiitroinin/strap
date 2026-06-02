@@ -9,7 +9,6 @@ import {
   exchangeCode,
   clearOAuth2Data,
 } from "./lib/oauth2.ts";
-import { importFromLuff } from "./lib/import-luff.ts";
 import { readSecret } from "./lib/prompt.ts";
 import * as out from "./lib/output.ts";
 import { whoopProvider, OAUTH2_CONFIG } from "./providers/whoop.ts";
@@ -49,7 +48,7 @@ const program = new Command();
 program
   .name("strap")
   .description("WHOOP health-data CLI — recovery, strain, sleep, workouts, cycles")
-  .version("0.2.1")
+  .version("0.3.0")
   .addHelpText("after", `
 OVERVIEW
   Fetches health and recovery data from the WHOOP API v2.
@@ -180,7 +179,7 @@ Example:
       out.error("No client secret provided.");
       process.exit(1);
     }
-    saveOAuth2Credentials(clientId, clientSecret, redirectUri);
+    await saveOAuth2Credentials(clientId, clientSecret, redirectUri);
     out.success("OAuth2 credentials saved to Keychain.");
     out.info("Now run: strap auth-login");
   });
@@ -203,7 +202,7 @@ Details:
 Example:
   strap auth-login`)
   .action(async () => {
-    const creds = loadOAuth2Credentials();
+    const creds = await loadOAuth2Credentials();
     const state = crypto.randomUUID().replace(/-/g, "").slice(0, 16);
     const url = buildAuthorizeUrl(OAUTH2_CONFIG, creds.clientId, creds.redirectUri, state);
 
@@ -248,7 +247,7 @@ Example:
       creds.redirectUri,
       code,
     );
-    saveTokens(tokens);
+    await saveTokens(tokens);
     out.success("Login successful! Tokens saved to Keychain.");
   });
 
@@ -270,8 +269,8 @@ Output fields:
 
 Example:
   strap auth-status`)
-  .action(() => {
-    const tokens = loadTokens();
+  .action(async () => {
+    const tokens = await loadTokens();
     if (!tokens) {
       out.info("Not logged in.");
       return;
@@ -298,37 +297,9 @@ Details:
 
 Example:
   strap auth-logout`)
-  .action(() => {
-    clearOAuth2Data();
+  .action(async () => {
+    await clearOAuth2Data();
     out.success("All WHOOP credentials removed from Keychain.");
-  });
-
-program
-  .command("auth-import-from-luff")
-  .description("One-shot: copy WHOOP auth from legacy luff-whoop Keychain entry")
-  .addHelpText("after", `
-Details:
-  For users migrating from the older 'whoop' CLI shipped via the luff
-  monorepo. Reads all credentials stored under the 'luff-whoop' Keychain
-  service and copies them to 'strap'. Idempotent — re-run is safe.
-
-  The source entries are NOT deleted; remove them manually with:
-    security delete-generic-password -s luff-whoop -a <account>
-
-Example:
-  strap auth-import-from-luff`)
-  .action(() => {
-    const { copied, missing } = importFromLuff();
-    if (copied.length === 0) {
-      out.error("No entries found under luff-whoop. Nothing to import.");
-      process.exit(1);
-    }
-    out.success(`Imported ${copied.length} entries from luff-whoop:`);
-    for (const k of copied) console.log(`  + ${k}`);
-    if (missing.length > 0) {
-      out.blank();
-      out.info(`Missing (not present in luff-whoop): ${missing.join(", ")}`);
-    }
   });
 
 // ── Data commands ────────────────────────────────────────────────

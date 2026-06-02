@@ -12,24 +12,24 @@ export interface OAuth2Tokens {
   expiresAt: number; // unix seconds
 }
 
-export function saveOAuth2Credentials(
+export async function saveOAuth2Credentials(
   clientId: string,
   clientSecret: string,
   redirectUri: string,
-): void {
-  setSecret("client-id", clientId);
-  setSecret("client-secret", clientSecret);
-  setSecret("redirect-uri", redirectUri);
+): Promise<void> {
+  await setSecret("client-id", clientId);
+  await setSecret("client-secret", clientSecret);
+  await setSecret("redirect-uri", redirectUri);
 }
 
-export function loadOAuth2Credentials(): {
+export async function loadOAuth2Credentials(): Promise<{
   clientId: string;
   clientSecret: string;
   redirectUri: string;
-} {
-  const clientId = getSecret("client-id");
-  const clientSecret = getSecret("client-secret");
-  const redirectUri = getSecret("redirect-uri");
+}> {
+  const clientId = await getSecret("client-id");
+  const clientSecret = await getSecret("client-secret");
+  const redirectUri = await getSecret("redirect-uri");
   if (!clientId || !clientSecret || !redirectUri) {
     throw new Error("No OAuth2 credentials saved. Run: strap auth-setup");
   }
@@ -111,16 +111,16 @@ export async function refreshAccessToken(
   return parseTokenResponse(data, refreshToken);
 }
 
-export function saveTokens(tokens: OAuth2Tokens): void {
-  setSecret("access-token", tokens.accessToken);
-  setSecret("refresh-token", tokens.refreshToken);
-  setSecret("expires-at", String(tokens.expiresAt));
+export async function saveTokens(tokens: OAuth2Tokens): Promise<void> {
+  await setSecret("access-token", tokens.accessToken);
+  await setSecret("refresh-token", tokens.refreshToken);
+  await setSecret("expires-at", String(tokens.expiresAt));
 }
 
-export function loadTokens(): OAuth2Tokens | null {
-  const accessToken = getSecret("access-token");
-  const refreshToken = getSecret("refresh-token");
-  const expiresAt = getSecret("expires-at");
+export async function loadTokens(): Promise<OAuth2Tokens | null> {
+  const accessToken = await getSecret("access-token");
+  const refreshToken = await getSecret("refresh-token");
+  const expiresAt = await getSecret("expires-at");
   if (!accessToken || !refreshToken) return null;
   return {
     accessToken,
@@ -130,7 +130,7 @@ export function loadTokens(): OAuth2Tokens | null {
 }
 
 export async function getValidAccessToken(config: OAuth2Config): Promise<string> {
-  const tokens = loadTokens();
+  const tokens = await loadTokens();
   if (!tokens) {
     throw new Error("Not logged in. Run: strap auth-login");
   }
@@ -140,23 +140,23 @@ export async function getValidAccessToken(config: OAuth2Config): Promise<string>
     return tokens.accessToken;
   }
 
-  const creds = loadOAuth2Credentials();
+  const creds = await loadOAuth2Credentials();
   const refreshed = await refreshAccessToken(
     config,
     creds.clientId,
     creds.clientSecret,
     tokens.refreshToken,
   );
-  saveTokens(refreshed);
+  await saveTokens(refreshed);
   return refreshed.accessToken;
 }
 
-export function clearOAuth2Data(): void {
+export async function clearOAuth2Data(): Promise<void> {
   for (const key of [
     "client-id", "client-secret", "redirect-uri",
     "access-token", "refresh-token", "expires-at",
   ]) {
-    deleteSecret(key);
+    await deleteSecret(key);
   }
 }
 
