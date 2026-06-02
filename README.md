@@ -65,7 +65,7 @@ Or run directly: `bun run src/cli.ts recovery`
 
 | Command | Description |
 |---|---|
-| `strap auth-setup <id> <secret> <uri>` | Save OAuth2 app credentials |
+| `strap auth-setup <id> <uri>` | Save OAuth2 app credentials |
 | `strap auth-login` | Interactive OAuth2 login flow |
 | `strap auth-status` | Check token validity |
 | `strap auth-logout` | Wipe all credentials |

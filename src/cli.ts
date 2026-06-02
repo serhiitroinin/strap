@@ -49,7 +49,7 @@ const program = new Command();
 program
   .name("strap")
   .description("WHOOP health-data CLI — recovery, strain, sleep, workouts, cycles")
-  .version("0.2.0")
+  .version("0.2.1")
   .addHelpText("after", `
 OVERVIEW
   Fetches health and recovery data from the WHOOP API v2.
@@ -59,7 +59,7 @@ OVERVIEW
 
 COMMAND CATEGORIES
   Auth:
-    auth-setup <id> <secret> <uri>   Save OAuth2 app credentials
+    auth-setup <id> <uri>            Save OAuth2 app credentials (secret prompted)
     auth-login                       Interactive OAuth2 login flow
     auth-status                      Check token validity
     auth-logout                      Remove all credentials
@@ -220,16 +220,23 @@ Example:
       });
     });
 
-    const codeMatch = redirectUrl.match(/[?&]code=([^&]+)/);
-    if (!codeMatch) {
+    let parsed: URL;
+    try {
+      parsed = new URL(redirectUrl);
+    } catch {
+      out.error("That does not look like a valid redirect URL.");
+      process.exit(1);
+    }
+
+    // searchParams.get() URL-decodes the value for us.
+    const code = parsed.searchParams.get("code");
+    if (!code) {
       out.error("Could not extract authorization code from URL.");
       process.exit(1);
     }
 
     // Validate the state parameter to bind this redirect to our request (CSRF protection).
-    const stateMatch = redirectUrl.match(/[?&]state=([^&]+)/);
-    const returnedState = stateMatch ? decodeURIComponent(stateMatch[1]!) : "";
-    if (returnedState !== state) {
+    if (parsed.searchParams.get("state") !== state) {
       out.error("OAuth2 state mismatch — the pasted URL does not match this login request. Aborting.");
       process.exit(1);
     }
@@ -239,7 +246,7 @@ Example:
       creds.clientId,
       creds.clientSecret,
       creds.redirectUri,
-      codeMatch[1]!,
+      code,
     );
     saveTokens(tokens);
     out.success("Login successful! Tokens saved to Keychain.");
