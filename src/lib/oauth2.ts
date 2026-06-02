@@ -160,7 +160,7 @@ export function clearOAuth2Data(): void {
   }
 }
 
-function parseTokenResponse(
+export function parseTokenResponse(
   data: Record<string, unknown>,
   existingRefreshToken?: string,
 ): OAuth2Tokens {
