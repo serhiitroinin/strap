@@ -53,7 +53,7 @@ Or run directly: `bun run src/cli.ts recovery`
 3. Run setup + login:
 
    ```bash
-   strap auth-setup <client_id> <client_secret> <redirect_uri>
+   strap auth-setup <client_id> <redirect_uri>
    strap auth-login
    ```
 
