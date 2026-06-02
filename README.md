@@ -31,7 +31,7 @@ Date        Perf%  Eff%  Total  REM   Deep  Light  Awake  RespR  Dist  Cycles  N
 ## Requirements
 
 - macOS (uses Keychain for credential storage)
-- [Bun](https://bun.sh) ≥ 1.0
+- [Bun](https://bun.sh) ≥ 1.3.9 — uses the native `Bun.secrets` keychain API
 - A [WHOOP developer app](https://developer.whoop.com/) — register at developer.whoop.com to get a `client_id`, `client_secret`, and configure a redirect URI.
 
 ## Install
